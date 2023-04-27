@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ydapp/widgets/boat_card.dart';
+import 'package:ydapp/widgets/navbar.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       debugShowCheckedModeBanner: false,
-      home: const MyHomePage(),
+      home: const Navbar(),
     );
   }
 }
@@ -135,8 +136,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
+                    children: const [
+                      Text(
                         'Start your see voyage with',
                         textScaleFactor: 1.5,
                         style: TextStyle(
@@ -145,7 +146,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           fontWeight: FontWeight.w200,
                         ),
                       ),
-                      const Text(
+                      Text(
                         'Yachts & Dhows',
                         textScaleFactor: 1.5,
                         style: TextStyle(
@@ -155,7 +156,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ],
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 10,
                   ),
                   ListView.builder(

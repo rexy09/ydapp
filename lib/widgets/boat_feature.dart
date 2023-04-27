@@ -15,12 +15,12 @@ class BoatFeature extends StatelessWidget {
             color: Color.fromARGB(110, 158, 158, 158)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+          children: const [
             Icon(
               Icons.bed_outlined,
               color: Colors.white,
             ),
-            const Text(
+            Text(
               '2 Bed',
               textScaleFactor: 1,
               style: TextStyle(

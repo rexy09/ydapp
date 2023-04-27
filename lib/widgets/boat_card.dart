@@ -62,7 +62,7 @@ class BoatCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                const Text(
                   'Yachts & Dhows',
                   textScaleFactor: 1.2,
                   style: TextStyle(
@@ -71,8 +71,8 @@ class BoatCard extends StatelessWidget {
                   ),
                 ),
                 Row(
-                  children: [
-                    const Text(
+                  children: const [
+                    Text(
                       'from',
                       textScaleFactor: 1,
                       style: TextStyle(

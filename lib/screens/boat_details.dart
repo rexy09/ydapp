@@ -171,6 +171,8 @@ class _BoatDetailsState extends State<BoatDetails> {
       ),
     );
   }
+
+  
 }
 
 void _boatBookingFormModalBottomSheet(context) {
@@ -187,3 +189,5 @@ void _boatBookingFormModalBottomSheet(context) {
         return const BoatBookingForm();
       });
 }
+
+

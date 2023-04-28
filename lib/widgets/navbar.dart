@@ -37,7 +37,9 @@ class _NavbarState extends State<Navbar> {
             image: AssetImage("assets/bg/water.jpg"), fit: BoxFit.cover),
       ),
       child: Container(
-        color: const Color.fromARGB(82, 0, 0, 0),
+        color: Color.fromARGB(200, 16, 64, 72),
+
+        // color: const Color.fromARGB(82, 0, 0, 0),
         child: Scaffold(
           backgroundColor: Colors.transparent,
           appBar: AppBar(

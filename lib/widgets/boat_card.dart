@@ -27,6 +27,7 @@ class BoatCard extends StatelessWidget {
                     image: NetworkImage(
                         "https://images.pexels.com/photos/163236/luxury-yacht-boat-speed-water-163236.jpeg?auto=compress&cs=tinysrgb&w=1600"),
                     fit: BoxFit.cover),
+                color: Colors.white60,
               ),
               child: Align(
                 alignment: Alignment.topRight,

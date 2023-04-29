@@ -887,7 +887,7 @@ class _HomeState extends State<Home> {
                               color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                         Icon(
-                          Icons.near_me_outlined,
+                          Icons.schedule_outlined,
                           color: Colors.white,
                         )
                       ],
@@ -956,7 +956,7 @@ class _HomeState extends State<Home> {
                               color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                         Icon(
-                          Icons.near_me_outlined,
+                          Icons.schedule_outlined,
                           color: Colors.white,
                         )
                       ],

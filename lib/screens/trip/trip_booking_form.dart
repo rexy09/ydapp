@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class TripBookingForm extends StatefulWidget {
-  const TripBookingForm({super.key});
+  final Map<String, dynamic> bookingData;
+  const TripBookingForm({super.key, required this.bookingData});
 
   @override
   State<TripBookingForm> createState() => _TripBookingFormState();
@@ -53,8 +54,45 @@ class _TripBookingFormState extends State<TripBookingForm> {
                       ),
                     ],
                   ),
+                  Text(
+                    '${widget.bookingData['destination'] != null ? widget.bookingData['destination']['name'] : widget.bookingData['destination']}',
+                    textScaleFactor: 1.1,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: const [
+                      Icon(
+                        Icons.near_me_outlined,
+                        color: Colors.white,
+                        size: 15,
+                      ),
+                      SizedBox(
+                        width: 3,
+                      ),
+                      Text(
+                        'Pickup',
+                        textScaleFactor: 1.1,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w300,
+                        ),
+                      ),
+                    ],
+                  ),
                   const Text(
-                    'Mbudya',
+                    'Slipway',
                     textScaleFactor: 1.1,
                     style: TextStyle(
                       color: Colors.white,

@@ -125,7 +125,7 @@ class _NavbarState extends State<Navbar> {
             },
             items: const [
               BottomNavigationBarItem(
-                icon: Icon(Icons.home_outlined),
+                icon: Icon(Icons.anchor_outlined),
                 label: '',
               ),
               BottomNavigationBarItem(
@@ -133,7 +133,7 @@ class _NavbarState extends State<Navbar> {
                 label: '',
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.event_outlined),
+                icon: Icon(Icons.event_note_outlined),
                 label: '',
               ),
               // BottomNavigationBarItem(

@@ -48,7 +48,7 @@ class _BoatsState extends State<Boats> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
                 Text(
-                  'Start your see voyage with',
+                  'Start your sea voyage with',
                   textScaleFactor: 1.5,
                   style: TextStyle(
                     letterSpacing: 4,

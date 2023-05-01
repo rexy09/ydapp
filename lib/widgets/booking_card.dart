@@ -31,7 +31,7 @@ class _BookingCardState extends State<BookingCard> {
                 SizedBox(
                   width: 75,
                   child: Row(
-                    children: [
+                    children:const [
                       Icon(
                         Icons.north_east_outlined,
                         size: 15,
@@ -50,7 +50,7 @@ class _BookingCardState extends State<BookingCard> {
                 SizedBox(
                   width: 75,
                   child: Row(
-                    children: [
+                    children: const [
                       Icon(
                         Icons.south_west_outlined,
                         size: 15,

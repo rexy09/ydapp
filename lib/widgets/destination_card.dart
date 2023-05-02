@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ydapp/screens/trip/destination_details.dart';
 
 class DestinationCard extends StatelessWidget {
   const DestinationCard({super.key});
@@ -11,10 +12,12 @@ class DestinationCard extends StatelessWidget {
       padding: const EdgeInsets.only(right: 15.0),
       child: InkWell(
         onTap: () {
-          // Navigator.push(context,
-          //     MaterialPageRoute(builder: (context) => const BoatDetails()));
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const DestinationDetails()));
         },
-        child: Container(
+        child: SizedBox(
           width: deviceWidth * 0.88,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

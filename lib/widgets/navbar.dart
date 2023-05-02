@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ydapp/screens/auth/signin.dart';
 import 'package:ydapp/screens/navbar/boats.dart';
 import 'package:ydapp/screens/navbar/bookings.dart';
 import 'package:ydapp/screens/navbar/home.dart';
@@ -88,6 +89,15 @@ class _NavbarState extends State<Navbar> {
                     style: TextStyle(
                         color: Colors.white, fontWeight: FontWeight.bold),
                   ),
+                ),
+                ListTile(
+                  title: const Text('Login'),
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const Signin()));
+                  },
                 ),
                 ListTile(
                   title: const Text('FAQ'),

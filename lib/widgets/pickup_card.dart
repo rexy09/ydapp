@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ydapp/screens/trip/pickup_details.dart';
 
 class PickupCard extends StatelessWidget {
   const PickupCard({super.key});
@@ -11,8 +12,8 @@ class PickupCard extends StatelessWidget {
       padding: const EdgeInsets.only(right: 15.0),
       child: InkWell(
         onTap: () {
-          // Navigator.push(context,
-          //     MaterialPageRoute(builder: (context) => const BoatDetails()));
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => const PickupDetails()));
         },
         child: Container(
           width: deviceWidth * 0.88,
@@ -63,8 +64,8 @@ class PickupCard extends StatelessWidget {
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
+                children: const [
+                   Text(
                     'Slipway Hotel',
                     textScaleFactor: 1.2,
                     style: TextStyle(
@@ -72,7 +73,7 @@ class PickupCard extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Icon(
+                   Icon(
                     Icons.explore_outlined,
                     color: Colors.white,
                   ),
@@ -84,4 +85,6 @@ class PickupCard extends StatelessWidget {
       ),
     );
   }
+
+ 
 }

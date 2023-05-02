@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ydapp/screens/boat_details.dart';
+import 'package:ydapp/screens/boat/boat_details.dart';
 
 class BoatCard extends StatelessWidget {
   const BoatCard({super.key});

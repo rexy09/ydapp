@@ -1,6 +1,6 @@
 import 'package:blur/blur.dart';
 import 'package:flutter/material.dart';
-import 'package:ydapp/screens/boat_booking_form.dart';
+import 'package:ydapp/screens/boat/boat_booking_form.dart';
 import 'package:ydapp/widgets/boat_feature.dart';
 import 'package:ydapp/widgets/boat_image.dart';
 

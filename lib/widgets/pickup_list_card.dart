@@ -32,8 +32,8 @@ class PickupListCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: leadingIcon(),
-      title: const Text(
-        "Slipway",
+      title: Text(
+        data["name"],
         style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
       ),
       onTap: () {

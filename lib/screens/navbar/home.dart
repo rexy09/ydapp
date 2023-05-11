@@ -2,8 +2,13 @@ import 'dart:async';
 
 import 'package:blur/blur.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer_animation/shimmer_animation.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
+import 'package:ydapp/data/repositories/booking_option_repository.dart';
+import 'package:ydapp/logic/bloc/booking_option_bloc.dart';
+import 'package:ydapp/logic/bloc/booking_time_bloc.dart';
 import 'package:ydapp/screens/trip/destinations.dart';
 import 'package:ydapp/screens/trip/pickups.dart';
 import 'package:ydapp/screens/trip/trip_booking_form.dart';
@@ -11,6 +16,7 @@ import 'package:ydapp/widgets/departure_card.dart';
 import 'package:ydapp/widgets/destination_list_card.dart';
 import 'package:ydapp/widgets/pickup_list_card.dart';
 import 'package:ydapp/widgets/return_card.dart';
+import 'package:ydapp/widgets/shimmer_card.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -20,6 +26,10 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  BookingOptionRepository bookingOptionRepository = BookingOptionRepository();
+
+  late final BookingOptionBloc bookingOptionBloc;
+  late final BookingTimeBloc bookingTimeBloc;
   final _scrollController = ScrollController();
   final TextEditingController eastAfrican = TextEditingController();
   final TextEditingController nonEastAfrican = TextEditingController();
@@ -52,9 +62,18 @@ class _HomeState extends State<Home> {
   };
 
   Map<String, dynamic> bookingOptions = <String, dynamic>{
-    "destinations": [
-      {"id": 1, "name": "Mbudya"}
-    ]
+    "destination": [],
+    "pickup": [],
+    "passengers": {
+      "above_16_yrs": {"east_africa": 0, "non_east_africa": 0, "resident": 0},
+      "age_5_15_yrs": {"east_africa": 0, "non_east_africa": 0, "resident": 0},
+      "students": {"east_africa": 0, "non_east_africa": 0, "resident": 0},
+      "below_5_yrs": {"east_africa": 0, "non_east_africa": 0, "resident": 0}
+    }
+  };
+  Map<String, dynamic> bookingTime = <String, dynamic>{
+    "departure": [],
+    "return": []
   };
 
   String tripDate = "dd mm, yyy";
@@ -62,11 +81,13 @@ class _HomeState extends State<Home> {
   void _onDateSelectionChanged(DateRangePickerSelectionChangedArgs args) {
     bookingData['date'] = DateFormat('yyyy-MM-dd').format(args.value);
     tripDate = DateFormat('dd MMMM, yyyy').format(args.value);
+    fetchBookingTime();
     setState(() {});
   }
 
   void onDestinationSelected(Map<String, dynamic> data) {
     bookingData['destination'] = data;
+    fetchBookingTime();
     setState(() {});
   }
 
@@ -135,6 +156,31 @@ class _HomeState extends State<Home> {
     return "$total";
   }
 
+  void fetchBookingTime() {
+    if (bookingData['destination'] != null && bookingData['date'] != null) {
+      bookingTimeBloc.add(FetchBookingTime(
+          destination: bookingData['destination']['id'],
+          date: bookingData['date']));
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    bookingOptionBloc =
+        BookingOptionBloc(bookingOptionRepository: bookingOptionRepository);
+    bookingOptionBloc.add(FetchBookingOption());
+    bookingTimeBloc =
+        BookingTimeBloc(bookingOptionRepository: bookingOptionRepository);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    bookingOptionBloc.dispose();
+    bookingTimeBloc.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     double deviceHeight = MediaQuery.of(context).size.height;
@@ -144,6 +190,7 @@ class _HomeState extends State<Home> {
       child: RefreshIndicator(
         onRefresh: () async {
           bookingDataReset();
+          bookingOptionBloc.add(FetchBookingOption());
         },
         child: SingleChildScrollView(
           controller: _scrollController,
@@ -178,401 +225,414 @@ class _HomeState extends State<Home> {
               const SizedBox(
                 height: 20,
               ),
-              Column(
-                children: [
-                  TextFormField(
-                    showCursor: false,
-                    readOnly: true,
-                    controller: TextEditingController(
-                        text: bookingData['destination'] != null
-                            ? bookingData['destination']['name']
-                            : bookingData['destination']),
-                    cursorColor: Colors.white,
-                    style: const TextStyle(
-                      color: Colors.white,
-                    ),
-                    decoration: const InputDecoration(
-                      labelText: 'destination*',
-                      labelStyle: TextStyle(color: Colors.white),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white),
-                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white),
-                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      ),
-                      focusColor: Colors.white,
-                      fillColor: Colors.white,
-                      suffixIcon: Icon(Icons.place_outlined),
-                      suffixIconColor: Colors.white,
-                    ),
-                    onTap: () {
-                      _destinationModalBottomSheet(context);
-                    },
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  TextFormField(
-                    showCursor: false,
-                    readOnly: true,
-                    controller: TextEditingController(text: tripDate),
-                    cursorColor: Colors.white,
-                    style: const TextStyle(
-                      color: Colors.white,
-                    ),
-                    keyboardType: TextInputType.none,
-                    decoration: const InputDecoration(
-                      hintText: 'dd mm, yyyy',
-                      hintStyle: TextStyle(color: Colors.white),
-                      labelText: 'date*',
-                      labelStyle: TextStyle(color: Colors.white),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white),
-                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white),
-                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      ),
-                      focusColor: Colors.white,
-                      fillColor: Colors.white,
-                      suffixIcon: Icon(Icons.event_outlined),
-                      suffixIconColor: Colors.white,
-                    ),
-                    onTap: () {
-                      pickDateBottomSheet(context);
-                    },
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  TextFormField(
-                    showCursor: false,
-                    readOnly: true,
-                    controller: TextEditingController(
-                        text: bookingData['pickup'] != null
-                            ? bookingData['pickup']['name']
-                            : bookingData['pickup']),
-                    cursorColor: Colors.white,
-                    style: const TextStyle(
-                      color: Colors.white,
-                    ),
-                    decoration: const InputDecoration(
-                      labelText: 'pickup*',
-                      labelStyle: TextStyle(color: Colors.white),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white),
-                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.white),
-                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      ),
-                      focusColor: Colors.white,
-                      fillColor: Colors.white,
-                      suffixIcon: Icon(Icons.near_me_outlined),
-                      suffixIconColor: Colors.white,
-                    ),
-                    onTap: () {
-                      _pickupModalBottomSheet(context);
-                    },
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              BlocConsumer<BookingOptionBloc, BookingOptionState>(
+                bloc: bookingOptionBloc,
+                listener: (context, state) {
+                  if (state is BookingOptionLoaded) {
+                    bookingOptions = state.bookingOptions;
+                    setState(() {});
+                  }
+                },
+                builder: (context, state) {
+                  if (state is BookingOptionLoading) {
+                    return bookingFormShimmer(deviceWidth);
+                  }
+                  return Column(
                     children: [
-                      SizedBox(
-                        width: deviceWidth * 0.45,
-                        child: TextFormField(
-                          showCursor: false,
-                          readOnly: true,
-                          controller: TextEditingController(
-                              text: bookingData['departure_time'] != null
-                                  ? bookingData['departure_time']['name']
-                                  : bookingData['departure_time']),
-                          cursorColor: Colors.white,
-                          style: const TextStyle(
-                            color: Colors.white,
-                          ),
-                          decoration: const InputDecoration(
-                            hintText: 'hh:mm',
-                            hintStyle: TextStyle(color: Colors.white),
-                            labelText: 'departure*',
-                            labelStyle: TextStyle(color: Colors.white),
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10.0)),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10.0)),
-                            ),
-                            focusColor: Colors.white,
-                            fillColor: Colors.white,
-                            suffixIcon: Icon(Icons.schedule_outlined),
-                            suffixIconColor: Colors.white,
-                          ),
-                          onTap: () {
-                            _departureModalBottomSheet(context);
-                          },
+                      TextFormField(
+                        showCursor: false,
+                        readOnly: true,
+                        controller: TextEditingController(
+                            text: bookingData['destination'] != null
+                                ? bookingData['destination']['name']
+                                : bookingData['destination']),
+                        cursorColor: Colors.white,
+                        style: const TextStyle(
+                          color: Colors.white,
                         ),
+                        decoration: const InputDecoration(
+                          labelText: 'destination*',
+                          labelStyle: TextStyle(color: Colors.white),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10.0)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10.0)),
+                          ),
+                          focusColor: Colors.white,
+                          fillColor: Colors.white,
+                          suffixIcon: Icon(Icons.place_outlined),
+                          suffixIconColor: Colors.white,
+                        ),
+                        onTap: () {
+                          _destinationModalBottomSheet(context);
+                        },
                       ),
-                      SizedBox(
-                        width: deviceWidth * 0.45,
-                        child: TextFormField(
-                          showCursor: false,
-                          readOnly: true,
-                          controller: TextEditingController(
-                              text: bookingData['return_time'] != null
-                                  ? bookingData['return_time']['name']
-                                  : bookingData['return_time']),
-                          cursorColor: Colors.white,
-                          style: const TextStyle(
-                            color: Colors.white,
-                          ),
-                          decoration: const InputDecoration(
-                            hintText: 'hh:mm',
-                            hintStyle: TextStyle(color: Colors.white),
-                            labelText: 'return*',
-                            labelStyle: TextStyle(color: Colors.white),
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10.0)),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10.0)),
-                            ),
-                            focusColor: Colors.white,
-                            fillColor: Colors.white,
-                            suffixIcon: Icon(Icons.schedule_outlined),
-                            suffixIconColor: Colors.white,
-                          ),
-                          onTap: () {
-                            _returnModalBottomSheet(context);
-                          },
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      TextFormField(
+                        showCursor: false,
+                        readOnly: true,
+                        controller: TextEditingController(text: tripDate),
+                        cursorColor: Colors.white,
+                        style: const TextStyle(
+                          color: Colors.white,
                         ),
+                        keyboardType: TextInputType.none,
+                        decoration: const InputDecoration(
+                          hintText: 'dd mm, yyyy',
+                          hintStyle: TextStyle(color: Colors.white),
+                          labelText: 'date*',
+                          labelStyle: TextStyle(color: Colors.white),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10.0)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10.0)),
+                          ),
+                          focusColor: Colors.white,
+                          fillColor: Colors.white,
+                          suffixIcon: Icon(Icons.event_outlined),
+                          suffixIconColor: Colors.white,
+                        ),
+                        onTap: () {
+                          pickDateBottomSheet(context);
+                        },
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      TextFormField(
+                        showCursor: false,
+                        readOnly: true,
+                        controller: TextEditingController(
+                            text: bookingData['pickup'] != null
+                                ? bookingData['pickup']['name']
+                                : bookingData['pickup']),
+                        cursorColor: Colors.white,
+                        style: const TextStyle(
+                          color: Colors.white,
+                        ),
+                        decoration: const InputDecoration(
+                          labelText: 'pickup*',
+                          labelStyle: TextStyle(color: Colors.white),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10.0)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10.0)),
+                          ),
+                          focusColor: Colors.white,
+                          fillColor: Colors.white,
+                          suffixIcon: Icon(Icons.near_me_outlined),
+                          suffixIconColor: Colors.white,
+                        ),
+                        onTap: () {
+                          _pickupModalBottomSheet(context);
+                        },
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      BlocConsumer<BookingTimeBloc, BookingTimeState>(
+                        bloc:bookingTimeBloc,
+                        listener: (context, state) {
+                          if (state is BookingTimeLoaded) {
+                              
+                          }
+                        },
+                        builder: (context, state) {
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              SizedBox(
+                                width: deviceWidth * 0.45,
+                                child: TextFormField(
+                                  showCursor: false,
+                                  readOnly: true,
+                                  controller: TextEditingController(
+                                      text:
+                                          bookingData['departure_time'] != null
+                                              ? bookingData['departure_time']
+                                                  ['name']
+                                              : bookingData['departure_time']),
+                                  cursorColor: Colors.white,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                  decoration: const InputDecoration(
+                                    hintText: 'hh:mm',
+                                    hintStyle: TextStyle(color: Colors.white),
+                                    labelText: 'departure*',
+                                    labelStyle: TextStyle(color: Colors.white),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderSide:
+                                          BorderSide(color: Colors.white),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(10.0)),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide:
+                                          BorderSide(color: Colors.white),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(10.0)),
+                                    ),
+                                    focusColor: Colors.white,
+                                    fillColor: Colors.white,
+                                    suffixIcon: Icon(Icons.schedule_outlined),
+                                    suffixIconColor: Colors.white,
+                                  ),
+                                  onTap: () {
+                                    _departureModalBottomSheet(context);
+                                  },
+                                ),
+                              ),
+                              SizedBox(
+                                width: deviceWidth * 0.45,
+                                child: TextFormField(
+                                  showCursor: false,
+                                  readOnly: true,
+                                  controller: TextEditingController(
+                                      text: bookingData['return_time'] != null
+                                          ? bookingData['return_time']['name']
+                                          : bookingData['return_time']),
+                                  cursorColor: Colors.white,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                  decoration: const InputDecoration(
+                                    hintText: 'hh:mm',
+                                    hintStyle: TextStyle(color: Colors.white),
+                                    labelText: 'return*',
+                                    labelStyle: TextStyle(color: Colors.white),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderSide:
+                                          BorderSide(color: Colors.white),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(10.0)),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderSide:
+                                          BorderSide(color: Colors.white),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(10.0)),
+                                    ),
+                                    focusColor: Colors.white,
+                                    fillColor: Colors.white,
+                                    suffixIcon: Icon(Icons.schedule_outlined),
+                                    suffixIconColor: Colors.white,
+                                  ),
+                                  onTap: () {
+                                    _returnModalBottomSheet(context);
+                                  },
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                      const SizedBox(
+                        height: 30,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(
+                            width: deviceWidth * 0.45,
+                            child: TextFormField(
+                              controller: TextEditingController(
+                                  text: totalPasengers("above_16_yrs")),
+                              readOnly: true,
+                              cursorColor: Colors.white,
+                              style: const TextStyle(
+                                color: Colors.white,
+                              ),
+                              decoration: const InputDecoration(
+                                labelText: 'above 16 years',
+                                labelStyle: TextStyle(color: Colors.white),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.white),
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(10.0)),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.white),
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(10.0)),
+                                ),
+                                focusColor: Colors.white,
+                                fillColor: Colors.white,
+                                suffixIcon: Icon(Icons.people_outline),
+                                suffixIconColor: Colors.white,
+                              ),
+                              onTap: () {
+                                _passengerModalBottomSheet(context,
+                                    title: 'Above 16 years',
+                                    passengerKey: "above_16_yrs");
+                              },
+                            ),
+                          ),
+                          SizedBox(
+                            width: deviceWidth * 0.45,
+                            child: TextFormField(
+                              controller: TextEditingController(
+                                  text: totalPasengers("age_5_15_yrs")),
+                              readOnly: true,
+                              cursorColor: Colors.white,
+                              style: const TextStyle(
+                                color: Colors.white,
+                              ),
+                              decoration: const InputDecoration(
+                                labelText: '5-15 years',
+                                labelStyle: TextStyle(color: Colors.white),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.white),
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(10.0)),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.white),
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(10.0)),
+                                ),
+                                focusColor: Colors.white,
+                                fillColor: Colors.white,
+                                suffixIcon: Icon(Icons.people_outline),
+                                suffixIconColor: Colors.white,
+                              ),
+                              onTap: () {
+                                _passengerModalBottomSheet(context,
+                                    title: '5-15 years',
+                                    passengerKey: "age_5_15_yrs");
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(
+                            width: deviceWidth * 0.45,
+                            child: TextFormField(
+                              controller: TextEditingController(
+                                  text: totalPasengers("students")),
+                              readOnly: true,
+                              cursorColor: Colors.white,
+                              style: const TextStyle(
+                                color: Colors.white,
+                              ),
+                              decoration: const InputDecoration(
+                                labelText: 'students',
+                                labelStyle: TextStyle(color: Colors.white),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.white),
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(10.0)),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.white),
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(10.0)),
+                                ),
+                                focusColor: Colors.white,
+                                fillColor: Colors.white,
+                                suffixIcon: Icon(Icons.people_outline),
+                                suffixIconColor: Colors.white,
+                              ),
+                              onTap: () {
+                                _passengerModalBottomSheet(context,
+                                    title: 'Students',
+                                    passengerKey: "students");
+                              },
+                            ),
+                          ),
+                          SizedBox(
+                            width: deviceWidth * 0.45,
+                            child: TextFormField(
+                              controller: TextEditingController(
+                                  text: totalPasengers("below_5_yrs")),
+                              readOnly: true,
+                              cursorColor: Colors.white,
+                              style: const TextStyle(
+                                color: Colors.white,
+                              ),
+                              decoration: const InputDecoration(
+                                labelText: 'below 5 years',
+                                labelStyle: TextStyle(color: Colors.white),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.white),
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(10.0)),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.white),
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(10.0)),
+                                ),
+                                focusColor: Colors.white,
+                                fillColor: Colors.white,
+                                suffixIcon: Icon(Icons.people_outline),
+                                suffixIconColor: Colors.white,
+                              ),
+                              onTap: () {
+                                _passengerModalBottomSheet(context,
+                                    title: 'Below 5 years',
+                                    passengerKey: "below_5_yrs");
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 20,
                       ),
                     ],
+                  );
+                },
+              ),
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            TripBookingForm(bookingData: bookingData)),
+                  );
+                },
+                child: Container(
+                  width: deviceWidth,
+                  height: 50,
+                  decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                    color: Colors.white,
                   ),
-                  const SizedBox(
-                    height: 30,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SizedBox(
-                        width: deviceWidth * 0.45,
-                        child: TextFormField(
-                          controller: TextEditingController(
-                              text: totalPasengers("above_16_yrs")),
-                          readOnly: true,
-                          cursorColor: Colors.white,
-                          style: const TextStyle(
-                            color: Colors.white,
-                          ),
-                          decoration: const InputDecoration(
-                            labelText: 'above 16 years',
-                            labelStyle: TextStyle(color: Colors.white),
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10.0)),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10.0)),
-                            ),
-                            focusColor: Colors.white,
-                            fillColor: Colors.white,
-                            suffixIcon: Icon(Icons.people_outline),
-                            suffixIconColor: Colors.white,
-                          ),
-                          onTap: () {
-                            _passengerModalBottomSheet(context,
-                                title: 'Above 16 years',
-                                passengerKey: "above_16_yrs");
-                          },
-                        ),
-                      ),
-                      SizedBox(
-                        width: deviceWidth * 0.45,
-                        child: TextFormField(
-                          controller: TextEditingController(
-                              text: totalPasengers("age_5_15_yrs")),
-                          readOnly: true,
-                          cursorColor: Colors.white,
-                          style: const TextStyle(
-                            color: Colors.white,
-                          ),
-                          decoration: const InputDecoration(
-                            labelText: '5-15 years',
-                            labelStyle: TextStyle(color: Colors.white),
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10.0)),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10.0)),
-                            ),
-                            focusColor: Colors.white,
-                            fillColor: Colors.white,
-                            suffixIcon: Icon(Icons.people_outline),
-                            suffixIconColor: Colors.white,
-                          ),
-                          onTap: () {
-                            _passengerModalBottomSheet(context,
-                                title: '5-15 years',
-                                passengerKey: "age_5_15_yrs");
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SizedBox(
-                        width: deviceWidth * 0.45,
-                        child: TextFormField(
-                          controller: TextEditingController(
-                              text: totalPasengers("students")),
-                          readOnly: true,
-                          cursorColor: Colors.white,
-                          style: const TextStyle(
-                            color: Colors.white,
-                          ),
-                          decoration: const InputDecoration(
-                            labelText: 'students',
-                            labelStyle: TextStyle(color: Colors.white),
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10.0)),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10.0)),
-                            ),
-                            focusColor: Colors.white,
-                            fillColor: Colors.white,
-                            suffixIcon: Icon(Icons.people_outline),
-                            suffixIconColor: Colors.white,
-                          ),
-                          onTap: () {
-                            _passengerModalBottomSheet(context,
-                                title: 'Students', passengerKey: "students");
-                          },
-                        ),
-                      ),
-                      SizedBox(
-                        width: deviceWidth * 0.45,
-                        child: TextFormField(
-                          controller: TextEditingController(
-                              text: totalPasengers("below_5_yrs")),
-                          readOnly: true,
-                          cursorColor: Colors.white,
-                          style: const TextStyle(
-                            color: Colors.white,
-                          ),
-                          decoration: const InputDecoration(
-                            labelText: 'below 5 years',
-                            labelStyle: TextStyle(color: Colors.white),
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10.0)),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Colors.white),
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(10.0)),
-                            ),
-                            focusColor: Colors.white,
-                            fillColor: Colors.white,
-                            suffixIcon: Icon(Icons.people_outline),
-                            suffixIconColor: Colors.white,
-                          ),
-                          onTap: () {
-                            _passengerModalBottomSheet(context,
-                                title: 'Below 5 years',
-                                passengerKey: "below_5_yrs");
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                TripBookingForm(bookingData: bookingData)),
-                      );
-                    },
-                    child: Container(
-                      width: deviceWidth,
-                      height: 50,
-                      decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                        color: Colors.white,
-                      ),
-                      child: const Center(
-                        child: Text(
-                          "Book Now",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
+                  child: const Center(
+                    child: Text(
+                      "Book Now",
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  // InkWell(
-                  //   onTap: () {
-                  //     bookingDataReset();
-                  //   },
-                  //   child: Container(
-                  //     width: deviceWidth,
-                  //     height: 50,
-                  //     decoration: const BoxDecoration(
-                  //       borderRadius: BorderRadius.all(Radius.circular(10)),
-                  //       color: Color.fromARGB(100, 0, 0, 0),
-                  //     ),
-                  //     child: const Center(
-                  //         child: Text(
-                  //       "Reset",
-                  //       style: TextStyle(
-                  //         fontWeight: FontWeight.bold,
-                  //         color: Colors.white,
-                  //       ),
-                  //     )),
-                  //   ),
-                  // ),
-                  // const SizedBox(
-                  //   height: 20,
-                  // ),
-                ],
+                ),
+              ),
+              const SizedBox(
+                height: 20,
               ),
               const Destinations(),
               const Pickups(),
@@ -732,21 +792,22 @@ class _HomeState extends State<Home> {
                         color: Colors.white,
                       ),
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'East African',
-                        labelStyle: TextStyle(color: Colors.white),
-                        enabledBorder: OutlineInputBorder(
+                        labelStyle: const TextStyle(color: Colors.white),
+                        enabledBorder: const OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.white),
                           borderRadius: BorderRadius.all(Radius.circular(10.0)),
                         ),
-                        focusedBorder: OutlineInputBorder(
+                        focusedBorder: const OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.white),
                           borderRadius: BorderRadius.all(Radius.circular(10.0)),
                         ),
                         focusColor: Colors.white,
                         fillColor: Colors.white,
-                        helperText: '10,000',
-                        helperStyle: TextStyle(color: Colors.white),
+                        helperText:
+                            '${bookingOptions['passengers'][passengerKey]['east_africa']}',
+                        helperStyle: const TextStyle(color: Colors.white),
                       ),
                       onChanged: (value) {},
                     ),
@@ -760,21 +821,22 @@ class _HomeState extends State<Home> {
                         color: Colors.white,
                       ),
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Non East African',
-                        labelStyle: TextStyle(color: Colors.white),
-                        enabledBorder: OutlineInputBorder(
+                        labelStyle: const TextStyle(color: Colors.white),
+                        enabledBorder: const OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.white),
                           borderRadius: BorderRadius.all(Radius.circular(10.0)),
                         ),
-                        focusedBorder: OutlineInputBorder(
+                        focusedBorder: const OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.white),
                           borderRadius: BorderRadius.all(Radius.circular(10.0)),
                         ),
                         focusColor: Colors.white,
                         fillColor: Colors.white,
-                        helperText: '40,000',
-                        helperStyle: TextStyle(color: Colors.white),
+                        helperText:
+                            '${bookingOptions['passengers'][passengerKey]['non_east_africa']}',
+                        helperStyle: const TextStyle(color: Colors.white),
                       ),
                     ),
                     const SizedBox(
@@ -787,21 +849,22 @@ class _HomeState extends State<Home> {
                         color: Colors.white,
                       ),
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Resident',
-                        labelStyle: TextStyle(color: Colors.white),
-                        enabledBorder: OutlineInputBorder(
+                        labelStyle: const TextStyle(color: Colors.white),
+                        enabledBorder: const OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.white),
                           borderRadius: BorderRadius.all(Radius.circular(10.0)),
                         ),
-                        focusedBorder: OutlineInputBorder(
+                        focusedBorder: const OutlineInputBorder(
                           borderSide: BorderSide(color: Colors.white),
                           borderRadius: BorderRadius.all(Radius.circular(10.0)),
                         ),
                         focusColor: Colors.white,
                         fillColor: Colors.white,
-                        helperText: '20,000',
-                        helperStyle: TextStyle(color: Colors.white),
+                        helperText:
+                            '${bookingOptions['passengers'][passengerKey]['resident']}',
+                        helperStyle: const TextStyle(color: Colors.white),
                       ),
                     ),
                     const SizedBox(
@@ -881,14 +944,14 @@ class _HomeState extends State<Home> {
                     ),
                     ListView.builder(
                       padding: const EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
-                      itemCount: 3,
+                      itemCount: bookingOptions['destination'].length,
                       shrinkWrap: true,
                       physics: const BouncingScrollPhysics(),
                       itemBuilder: (context, index) {
                         return DestinationListCard(
                           onDestinationSelected: onDestinationSelected,
                           bookingData: bookingData,
-                          data: {"id": index + 1, "name": "Mbudya"},
+                          data: bookingOptions['destination'][index],
                         );
                       },
                     ),
@@ -950,14 +1013,14 @@ class _HomeState extends State<Home> {
                     ),
                     ListView.builder(
                       padding: const EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
-                      itemCount: 3,
+                      itemCount: bookingOptions['pickup'].length,
                       shrinkWrap: true,
                       physics: const BouncingScrollPhysics(),
                       itemBuilder: (context, index) {
                         return PickupListCard(
                           onPickupSelected: onPickupSelected,
                           bookingData: bookingData,
-                          data: {"id": index + 1, "name": "Slipway"},
+                          data: bookingOptions['pickup'][index],
                         );
                       },
                     ),
@@ -1109,6 +1172,55 @@ class _HomeState extends State<Home> {
           ),
         );
       },
+    );
+  }
+
+  Widget bookingFormShimmer(double deviceWidth) {
+    return Column(
+      children: [
+        ShimmerCard(width: deviceWidth, height: 60),
+        const SizedBox(
+          height: 20,
+        ),
+        ShimmerCard(width: deviceWidth, height: 60),
+        const SizedBox(
+          height: 20,
+        ),
+        ShimmerCard(width: deviceWidth, height: 60),
+        const SizedBox(
+          height: 20,
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            ShimmerCard(width: deviceWidth * 0.45, height: 60),
+            ShimmerCard(width: deviceWidth * 0.45, height: 60),
+          ],
+        ),
+        const SizedBox(
+          height: 20,
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            ShimmerCard(width: deviceWidth * 0.45, height: 60),
+            ShimmerCard(width: deviceWidth * 0.45, height: 60),
+          ],
+        ),
+        const SizedBox(
+          height: 20,
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            ShimmerCard(width: deviceWidth * 0.45, height: 60),
+            ShimmerCard(width: deviceWidth * 0.45, height: 60),
+          ],
+        ),
+        const SizedBox(
+          height: 20,
+        ),
+      ],
     );
   }
 }

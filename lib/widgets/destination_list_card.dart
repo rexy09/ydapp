@@ -32,13 +32,13 @@ class DestinationListCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: leadingIcon(),
-      title: const Text(
-        "Mbudya",
-        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      title: Text(
+        data['name'],
+        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
       ),
-      trailing: const Text(
-        "40,000 TZS",
-        style: TextStyle(color: Colors.white),
+      trailing: Text(
+        "${data['price']} TZS",
+        style: const TextStyle(color: Colors.white),
       ),
       onTap: () {
         onDestinationSelected(data);

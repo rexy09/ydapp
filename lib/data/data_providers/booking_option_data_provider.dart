@@ -128,7 +128,6 @@ class BookingOptionDataProvider {
       url,
       headers: {},
     );
-    print(response.body);
     if (response.statusCode == successCode) {
       final json = jsonDecode(response.body);
       Map<String, dynamic> report = json;

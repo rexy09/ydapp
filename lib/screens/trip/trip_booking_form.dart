@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:jiffy/jiffy.dart';
 
 class TripBookingForm extends StatefulWidget {
   final Map<String, dynamic> bookingData;
@@ -200,7 +201,7 @@ class _TripBookingFormState extends State<TripBookingForm> {
                         height: 5,
                       ),
                       Text(
-                        '${widget.bookingData['departure_time'] != null ? widget.bookingData['departure_time']['name'] : widget.bookingData['departure_time']}',
+                        '${widget.bookingData['departure_time'] != null ? Jiffy.parse(widget.bookingData['departure_time']['departure_time'], pattern: 'h:mm:ss').format(pattern: 'h:mm a') : widget.bookingData['departure_time']}',
                         textScaleFactor: 1.1,
                         style: const TextStyle(
                           color: Colors.white,
@@ -236,7 +237,7 @@ class _TripBookingFormState extends State<TripBookingForm> {
                         height: 5,
                       ),
                       Text(
-                        '${widget.bookingData['return_time'] != null ? widget.bookingData['return_time']['name'] : widget.bookingData['return_time']}',
+                        '${widget.bookingData['return_time'] != null ? Jiffy.parse(widget.bookingData['return_time']['return_time'], pattern: 'h:mm:ss').format(pattern: 'h:mm a') : widget.bookingData['return_time']}',
                         textScaleFactor: 1.1,
                         style: const TextStyle(
                           color: Colors.white,

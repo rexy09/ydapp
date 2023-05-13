@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jiffy/jiffy.dart';
 
 class ReturnCard extends StatelessWidget {
   final Function(Map<String, dynamic>) onReturnSelected;
@@ -33,7 +34,8 @@ class ReturnCard extends StatelessWidget {
     return ListTile(
       leading: leadingIcon(),
       title: Text(
-        data['name'],
+        Jiffy.parse(data['return_time'], pattern: 'h:mm:ss')
+            .format(pattern: 'h:mm a'),
         style:
             const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
       ),

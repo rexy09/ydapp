@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:blur/blur.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:jiffy/jiffy.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import 'package:ydapp/data/repositories/booking_option_repository.dart';
@@ -17,6 +19,7 @@ import 'package:ydapp/widgets/destination_list_card.dart';
 import 'package:ydapp/widgets/pickup_list_card.dart';
 import 'package:ydapp/widgets/return_card.dart';
 import 'package:ydapp/widgets/shimmer_card.dart';
+import 'package:ydapp/widgets/snack_bar.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -156,6 +159,20 @@ class _HomeState extends State<Home> {
     return "$total";
   }
 
+  int totalPasengerCount() {
+    int total = 0;
+    bookingData['east_african'].forEach((key, value) {
+      total += int.parse("$value");
+    });
+    bookingData['non_east_african'].forEach((key, value) {
+      total += int.parse("$value");
+    });
+    bookingData['resident'].forEach((key, value) {
+      total += int.parse("$value");
+    });
+    return total;
+  }
+
   void fetchBookingTime() {
     if (bookingData['destination'] != null && bookingData['date'] != null) {
       bookingTimeBloc.add(FetchBookingTime(
@@ -231,6 +248,11 @@ class _HomeState extends State<Home> {
                   if (state is BookingOptionLoaded) {
                     bookingOptions = state.bookingOptions;
                     setState(() {});
+                  } else if (state is BookingOptionError) {
+                    showSnackBar(
+                      context,
+                      state.message,
+                    );
                   }
                 },
                 builder: (context, state) {
@@ -348,10 +370,14 @@ class _HomeState extends State<Home> {
                         height: 20,
                       ),
                       BlocConsumer<BookingTimeBloc, BookingTimeState>(
-                        bloc:bookingTimeBloc,
+                        bloc: bookingTimeBloc,
                         listener: (context, state) {
                           if (state is BookingTimeLoaded) {
-                              
+                            bookingOptions['departure_time'] =
+                                state.bookingTime['departure'];
+                            bookingOptions['return_time'] =
+                                state.bookingTime['return'];
+                            setState(() {});
                           }
                         },
                         builder: (context, state) {
@@ -364,27 +390,32 @@ class _HomeState extends State<Home> {
                                   showCursor: false,
                                   readOnly: true,
                                   controller: TextEditingController(
-                                      text:
-                                          bookingData['departure_time'] != null
-                                              ? bookingData['departure_time']
-                                                  ['name']
-                                              : bookingData['departure_time']),
+                                      text: bookingData['departure_time'] !=
+                                              null
+                                          ? Jiffy.parse(
+                                                  bookingData['departure_time']
+                                                      ['departure_time'],
+                                                  pattern: 'h:mm:ss')
+                                              .format(pattern: 'h:mm a')
+                                          : bookingData['departure_time']),
                                   cursorColor: Colors.white,
                                   style: const TextStyle(
                                     color: Colors.white,
                                   ),
-                                  decoration: const InputDecoration(
+                                  decoration: InputDecoration(
                                     hintText: 'hh:mm',
-                                    hintStyle: TextStyle(color: Colors.white),
+                                    hintStyle:
+                                        const TextStyle(color: Colors.white),
                                     labelText: 'departure*',
-                                    labelStyle: TextStyle(color: Colors.white),
-                                    enabledBorder: OutlineInputBorder(
+                                    labelStyle:
+                                        const TextStyle(color: Colors.white),
+                                    enabledBorder: const OutlineInputBorder(
                                       borderSide:
                                           BorderSide(color: Colors.white),
                                       borderRadius: BorderRadius.all(
                                           Radius.circular(10.0)),
                                     ),
-                                    focusedBorder: OutlineInputBorder(
+                                    focusedBorder: const OutlineInputBorder(
                                       borderSide:
                                           BorderSide(color: Colors.white),
                                       borderRadius: BorderRadius.all(
@@ -392,7 +423,19 @@ class _HomeState extends State<Home> {
                                     ),
                                     focusColor: Colors.white,
                                     fillColor: Colors.white,
-                                    suffixIcon: Icon(Icons.schedule_outlined),
+                                    suffixIcon: BlocBuilder<BookingTimeBloc,
+                                        BookingTimeState>(
+                                      bloc: bookingTimeBloc,
+                                      builder: (context, state) {
+                                        if (state is BookingTimeLoading) {
+                                          return const CupertinoActivityIndicator(
+                                            color: Colors.white,
+                                          );
+                                        }
+                                        return const Icon(
+                                            Icons.schedule_outlined);
+                                      },
+                                    ),
                                     suffixIconColor: Colors.white,
                                   ),
                                   onTap: () {
@@ -407,24 +450,30 @@ class _HomeState extends State<Home> {
                                   readOnly: true,
                                   controller: TextEditingController(
                                       text: bookingData['return_time'] != null
-                                          ? bookingData['return_time']['name']
+                                          ? Jiffy.parse(
+                                                  bookingData['return_time']
+                                                      ['return_time'],
+                                                  pattern: 'h:mm:ss')
+                                              .format(pattern: 'h:mm a')
                                           : bookingData['return_time']),
                                   cursorColor: Colors.white,
                                   style: const TextStyle(
                                     color: Colors.white,
                                   ),
-                                  decoration: const InputDecoration(
+                                  decoration: InputDecoration(
                                     hintText: 'hh:mm',
-                                    hintStyle: TextStyle(color: Colors.white),
+                                    hintStyle:
+                                        const TextStyle(color: Colors.white),
                                     labelText: 'return*',
-                                    labelStyle: TextStyle(color: Colors.white),
-                                    enabledBorder: OutlineInputBorder(
+                                    labelStyle:
+                                        const TextStyle(color: Colors.white),
+                                    enabledBorder: const OutlineInputBorder(
                                       borderSide:
                                           BorderSide(color: Colors.white),
                                       borderRadius: BorderRadius.all(
                                           Radius.circular(10.0)),
                                     ),
-                                    focusedBorder: OutlineInputBorder(
+                                    focusedBorder: const OutlineInputBorder(
                                       borderSide:
                                           BorderSide(color: Colors.white),
                                       borderRadius: BorderRadius.all(
@@ -432,7 +481,19 @@ class _HomeState extends State<Home> {
                                     ),
                                     focusColor: Colors.white,
                                     fillColor: Colors.white,
-                                    suffixIcon: Icon(Icons.schedule_outlined),
+                                    suffixIcon: BlocBuilder<BookingTimeBloc,
+                                        BookingTimeState>(
+                                      bloc: bookingTimeBloc,
+                                      builder: (context, state) {
+                                        if (state is BookingTimeLoading) {
+                                          return const CupertinoActivityIndicator(
+                                            color: Colors.white,
+                                          );
+                                        }
+                                        return const Icon(
+                                            Icons.schedule_outlined);
+                                      },
+                                    ),
                                     suffixIconColor: Colors.white,
                                   ),
                                   onTap: () {
@@ -609,12 +670,24 @@ class _HomeState extends State<Home> {
               ),
               InkWell(
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            TripBookingForm(bookingData: bookingData)),
-                  );
+                  if (bookingData['destination'] != null &&
+                      bookingData['date'] != null &&
+                      bookingData['pickup'] != null &&
+                      bookingData['departure_time'] != null &&
+                      bookingData['return_time'] != null &&
+                      totalPasengerCount() > 0) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              TripBookingForm(bookingData: bookingData)),
+                    );
+                  } else {
+                    showSnackBar(
+                      context,
+                      "Please complete the booking form ",
+                    );
+                  }
                 },
                 child: Container(
                   width: deviceWidth,
@@ -706,6 +779,7 @@ class _HomeState extends State<Home> {
                                       ),
                                     ),
                                     SfDateRangePicker(
+                                      minDate: DateTime.now(),
                                       todayHighlightColor:
                                           const Color(0xff3549FF),
                                       selectionColor: const Color(0xff3549FF),
@@ -1082,14 +1156,14 @@ class _HomeState extends State<Home> {
                     ),
                     ListView.builder(
                       padding: const EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
-                      itemCount: 3,
+                      itemCount: bookingOptions['departure_time'].length,
                       shrinkWrap: true,
                       physics: const BouncingScrollPhysics(),
                       itemBuilder: (context, index) {
                         return DepartureCard(
                           onDepartureSelected: onDepartureSelected,
                           bookingData: bookingData,
-                          data: {"id": index + 1, "name": "${9 + index}:00 am"},
+                          data: bookingOptions['departure_time'][index],
                         );
                       },
                     ),
@@ -1151,14 +1225,14 @@ class _HomeState extends State<Home> {
                     ),
                     ListView.builder(
                       padding: const EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
-                      itemCount: 3,
+                      itemCount: bookingOptions['return_time'].length,
                       shrinkWrap: true,
                       physics: const BouncingScrollPhysics(),
                       itemBuilder: (context, index) {
                         return ReturnCard(
                           onReturnSelected: onReturnSelected,
                           bookingData: bookingData,
-                          data: {"id": index + 1, "name": "${3 + index}:00 pm"},
+                          data: bookingOptions['return_time'][index],
                         );
                       },
                     ),

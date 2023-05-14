@@ -22,3 +22,9 @@ class BookingOptionLoaded extends BookingOptionState {
    @override
   List<Object> get props => [bookingOptions];
 }
+class BookingTripCostLoaded extends BookingOptionState {
+  final Map<String, dynamic> tripCost;
+  const BookingTripCostLoaded({required this.tripCost});
+  @override
+  List<Object> get props => [tripCost];
+}

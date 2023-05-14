@@ -1154,19 +1154,30 @@ class _HomeState extends State<Home> {
                     const SizedBox(
                       height: 20,
                     ),
-                    ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
-                      itemCount: bookingOptions['departure_time'].length,
-                      shrinkWrap: true,
-                      physics: const BouncingScrollPhysics(),
-                      itemBuilder: (context, index) {
-                        return DepartureCard(
-                          onDepartureSelected: onDepartureSelected,
-                          bookingData: bookingData,
-                          data: bookingOptions['departure_time'][index],
-                        );
-                      },
-                    ),
+                    bookingOptions['departure_time'] != null
+                        ? ListView.builder(
+                            padding:
+                                const EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
+                            itemCount: bookingOptions['departure_time'].length,
+                            shrinkWrap: true,
+                            physics: const BouncingScrollPhysics(),
+                            itemBuilder: (context, index) {
+                              return DepartureCard(
+                                onDepartureSelected: onDepartureSelected,
+                                bookingData: bookingData,
+                                data: bookingOptions['departure_time'][index],
+                              );
+                            },
+                          )
+                        : const Center(
+                            child: Text(
+                              "Sorry, departure time is not available for the selected date. Please choose another date or contact customer support for assistance.",
+                              textScaleFactor: 1,
+                              style: TextStyle(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
                     const SizedBox(
                       height: 20,
                     ),
@@ -1223,19 +1234,30 @@ class _HomeState extends State<Home> {
                     const SizedBox(
                       height: 20,
                     ),
-                    ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
-                      itemCount: bookingOptions['return_time'].length,
-                      shrinkWrap: true,
-                      physics: const BouncingScrollPhysics(),
-                      itemBuilder: (context, index) {
-                        return ReturnCard(
-                          onReturnSelected: onReturnSelected,
-                          bookingData: bookingData,
-                          data: bookingOptions['return_time'][index],
-                        );
-                      },
-                    ),
+                    bookingOptions['return_time'] != null
+                        ? ListView.builder(
+                            padding:
+                                const EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
+                            itemCount: bookingOptions['return_time'].length,
+                            shrinkWrap: true,
+                            physics: const BouncingScrollPhysics(),
+                            itemBuilder: (context, index) {
+                              return ReturnCard(
+                                onReturnSelected: onReturnSelected,
+                                bookingData: bookingData,
+                                data: bookingOptions['return_time'][index],
+                              );
+                            },
+                          )
+                        : const Center(
+                            child: Text(
+                              "Sorry, return time is not available for the selected date. Please choose another date or contact customer support for assistance.",
+                              textScaleFactor: 1,
+                              style: TextStyle(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
                     const SizedBox(
                       height: 20,
                     ),

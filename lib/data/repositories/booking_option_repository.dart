@@ -7,6 +7,9 @@ class BookingOptionRepository {
   Future<Map<String, dynamic>> fetchBookingOptions() async {
     return await bookingOptionDataProvider.fetchBookingOptions();
   }
+  Future<Map<String, dynamic>> fetchBookingTripCost({required Map<String, dynamic> bookingData}) async {
+    return await bookingOptionDataProvider.fetchBookingTripCost(bookingData: bookingData);
+  }
 
   Future<Map<String, dynamic>> fetchBookingTime(
       {required int destination, required String date}) async {

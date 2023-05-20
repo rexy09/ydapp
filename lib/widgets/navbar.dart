@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ydapp/screens/auth/signin.dart';
+import 'package:ydapp/screens/auth/splash.dart';
 import 'package:ydapp/screens/navbar/boats.dart';
 import 'package:ydapp/screens/navbar/bookings.dart';
 import 'package:ydapp/screens/navbar/home.dart';
@@ -97,6 +98,15 @@ class _NavbarState extends State<Navbar> {
                         context,
                         MaterialPageRoute(
                             builder: (context) => const Signin()));
+                  },
+                ),
+                ListTile(
+                  title: const Text('Splash'),
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const SplashScreen()));
                   },
                 ),
                 ListTile(
